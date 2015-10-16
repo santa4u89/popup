@@ -1,19 +1,27 @@
 module.exports = function(grunt) {
 
     grunt.initConfig({
+        www: 'www',
+        bower: '<%= www %>/bower',
+        css: '<%= www %>/css',
+        styles: '<%= www %>/less',
+        js: '<%= www %>/js',
         less: {
             dev: {
                 options: {
-                  paths: ["less"]
+                    paths: [
+                        "<%= styles %>",
+                        '<%= bower %>'
+                    ]
                 },
                 files: {
-                  "css/style.css": "less/style.less"
+                  "<%= css %>/style.css": "<%= styles %>/style.less"
                 }
             }
         },
 
         jshint: {
-            files: ['js/*.js'],
+            files: ['<%= js %>/*.js'],
             options: {
                 globals: {
                     jQuery: true
@@ -27,7 +35,7 @@ module.exports = function(grunt) {
             },
             my_target: {
                 files: {
-                    'dest/output.min.js': ['src/input.js']
+                    '<%= js %>/script.min.js': ['<%= js %>/script.js']
                 }
             }
         },
@@ -35,14 +43,19 @@ module.exports = function(grunt) {
         esteWatch: {
             options: {
                 dirs: [
-                    'less/**/'
+                    './',
+                    '<%= styles %>/**/'
                 ],
                 livereload: {
                     enabled: false
                 }
             },
             less: function() {
-                return 'less';
+                return 'cssdev';
+            },
+
+            js: function() {
+                return 'jshint';
             }
         },
 
@@ -50,16 +63,17 @@ module.exports = function(grunt) {
             dev: {
                 bsFiles: {
                     src: [
-                        'css/style.css',
-                        'js/script.js',
-                        '*.html'
+                        '<%= css %>/style.css',
+                        '<%= js %>/script.js',
+                        '<%= www %>/*.html'
                     ]
                 },
                 options: {
                     watchTask: true,
-                    port: 9999,
+                    port: 8888,
+                    //open: false,
                     server: {
-                        baseDir: './'
+                        baseDir: '<%= www %>'
                     }
                 }
             }
@@ -74,4 +88,5 @@ module.exports = function(grunt) {
     grunt.loadNpmTasks('grunt-contrib-concat');
 
     grunt.registerTask('default', ['less', 'jshint', 'browserSync', 'esteWatch']);
+    grunt.registerTask('cssdev', ['less']);
 };
