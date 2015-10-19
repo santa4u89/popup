@@ -1,0 +1,27 @@
+{
+  "name": "Popup",
+  "description": "Grunt template file",
+  "main": "index.js",
+  "authors": [
+    "Ronald Ruzicka <ronald.ruzicka@actum.cz>"
+  ],
+  "license": "ISC",
+  "homepage": "https://github.com/santa4u89/popup",
+  "moduleType": [
+    "node"
+  ],
+  "private": true,
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "www/bower",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "bootstrap": "~3.3.5",
+    "jquery": "~2.1.4",
+    "material-design-icons": "~2.0.0"
+  }
+}
