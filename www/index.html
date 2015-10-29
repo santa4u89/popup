@@ -9,14 +9,6 @@
         <link rel="stylesheet" href="css/style.css">
     </head>
     <body>
-        <div class="popup-wrapper">
-            <a class="close" href="#"><i class="material-icons">clear</i></a>
-            <div class="popup">
-                <img src="img/keep-calm-and-learn-to-code.png" width="600" height="700" alt="Keep calm and learn to code">
-                <!-- <img src="img/landscape.jpg" width="1920" height="1080" alt="Keep calm and learn to code"> -->
-            </div>
-        </div>
-
         <div class="container">
             <h1>Gruntfile template</h1>
 
@@ -26,14 +18,18 @@
 
             <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</p>
 
-            <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</p>
+            <a href="img/keep-calm-and-learn-to-code.jpg" data-popup="image1">
+                <img src="img/keep-calm-and-learn-to-code-thumb.jpg" alt="Keep calm and learn to code">
+            </a>
+            <a href="img/landscape.jpg" data-popup="image2">
+                <img src="img/landscape-thumb.jpg" alt="Keep calm and learn to code">
+            </a>
 
-            <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</p>
         </div>
         <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
         <script src="js/script.js"></script>
         <script>
-            Popup($('.popup'));
+            new Popup();
         </script>
     </body>
 </html>

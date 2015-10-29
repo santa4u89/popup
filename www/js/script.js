@@ -1,10 +1,20 @@
-var Popup = function (container) {
+var Popup = function() {
+    $(window).on('load', $.proxy(this.popupCreate, this));
+    $('body').on('click', 'a[data-popup]', $.proxy(this.popupShow, this));
+    $('body').on('click', '.close', $.proxy(this.popupClose, this));
+};
 
+Popup.prototype.popupCreate = function() {
+    this.popupOverlay = $('<div class="popup-overlay"><div class="popup"><img class="popup-image" src=""></div><a class="close" href="#"><i class="material-icons">clear</i></a></div>');
+    this.container = this.popupOverlay.find('.popup');
+    $('body').append(this.popupOverlay);
+    this.popupOverlay.css('display', 'none');
+};
+
+Popup.prototype.popupCalculate = function() {
     // Main variables
-    this.container = container;
+    this.container = $('body').find('.popup');
     this.windowObject = $(window);
-    this.popupWrapper = $('.popup-wrapper');
-    // this.popupWrapper = this.container.wrap('<div class="popup-wrapper"></div>');
 
     // Variables for calculating dimensions of the popup banner
     this.windowWidth = this.windowObject.width();
@@ -12,14 +22,13 @@ var Popup = function (container) {
     this.containerWidth = this.container.width();
     this.containerHeight = this.container.height();
     this.containerMargin = 50;
-    // this.popupRatio = this.containerWidth / this.containerHeight;
     this.maxWidth = this.windowWidth - this.containerMargin;
     this.maxHeight = this.windowHeight - this.containerMargin;
 
     // Calculating dimensions to center popup banner
     this.container.css({
-        left: (this.windowWidth - containerWidth) / 2 + 'px',
-        top: (this.windowHeight - containerHeight) / 2 + 'px',
+        left: (this.windowWidth - this.containerWidth) / 2 + 'px',
+        top: (this.windowHeight - this.containerHeight) / 2 + 'px',
     });
 
     // If image is wider than window's width, set up the width of the window
@@ -30,10 +39,10 @@ var Popup = function (container) {
         this.containerWidth = this.containerWidth * this.popupRatio;
 
         this.container.css({
-            width: maxWidth + 'px',
+            width: this.maxWidth + 'px',
             height: this.containerHeight + 'px',
-            left: containerMargin / 2 + 'px',
-            top: (this.windowHeight - containerHeight) / 2 + 'px'
+            left: this.containerMargin / 2 + 'px',
+            top: (this.windowHeight - this.containerHeight) / 2 + 'px'
         });
     }
 
@@ -48,27 +57,37 @@ var Popup = function (container) {
             height: this.maxHeight + 'px',
             width: this.containerWidth + 'px',
             left: (this.windowWidth - this.containerWidth) / 2 + 'px',
-            top: (this.windowHeight - containerHeight) / 2 + 'px'
+            top: (this.windowHeight - this.containerHeight) / 2 + 'px'
         });
     }
 
-    console.log('windowWidth: ' + windowWidth);
-    console.log('containerWidth: ' + containerWidth);
-    console.log('windowHeight: ' + windowHeight);
-    console.log('containerHeight: ' + containerHeight);
+    console.log('windowWidth: ' + this.windowWidth);
+    console.log('containerWidth: ' + this.containerWidth);
+    console.log('windowHeight: ' + this.windowHeight);
+    console.log('containerHeight: ' + this.containerHeight);
     console.log('ratio: ' + this.popupRatio);
     console.log('top: ' + this.container.css('top'));
     console.log('left: ' + this.container.css('left'));
+};
 
-    // Initialize popup banner
-    this.container.fadeIn(400);
+Popup.prototype.popupImageShow = function(e) {
+    this.popupImage = this.popupOverlay.find('.popup-image');
+    this.popupImageSource = $(e.currentTarget).attr('href');
+    this.popupImage.load(this.popupCalculate);
+    this.popupImage.attr('src', this.popupImageSource);
+};
 
-    // Close popup banner
-    this.popupWrapper.on('click', '.close', function(e) {
-        e.preventDefault();
-        $('.popup-wrapper').fadeOut(400);
-    });
+Popup.prototype.popupShow = function(e) {
+    this.popupImageShow(e);
+    this.popupOverlay.fadeIn(400);
+    return false;
+};
 
+Popup.prototype.resetValues = function() {
+    this.container.removeAttr('style');
+};
 
-
+Popup.prototype.popupClose = function(){
+    this.popupOverlay.fadeOut('400', $.proxy(this.resetValues, this));
+    return false;
 };
