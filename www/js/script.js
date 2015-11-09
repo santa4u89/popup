@@ -1,7 +1,10 @@
+// this.variable - dá se použít napříč celou třídou
+// var variable - používá se jenom v rámci jedné metody/scope (př. this.windowWidth může být var windowWidth)
+
 var Popup = function() {
-    $(window).on('load', $.proxy(this.popupCreate, this));
+    $(window).on('load', $.proxy(this.popupCreate, this)); // není potřeba volat až při onload
     $('body').on('click', 'a[data-popup]', $.proxy(this.popupShow, this));
-    $('body').on('click', '.close', $.proxy(this.popupClose, this));
+    $('body').on('click', '.close', $.proxy(this.popupClose, this)); // proč na body?
 };
 
 Popup.prototype.popupCreate = function() {
@@ -11,9 +14,10 @@ Popup.prototype.popupCreate = function() {
     this.popupOverlay.css('display', 'none');
 };
 
+// tahle metoda je moc dlouhá
 Popup.prototype.popupCalculate = function() {
     // Main variables
-    this.container = $('body').find('.popup');
+    this.container = $('body').find('.popup'); // this.container je vytvořen už v metodě popupCreate
     this.windowObject = $(window);
 
     // Variables for calculating dimensions of the popup banner
@@ -31,6 +35,7 @@ Popup.prototype.popupCalculate = function() {
         top: (this.windowHeight - this.containerHeight) / 2 + 'px',
     });
 
+    // tyhle 2 if bloky spoj do jednoho - duplikace kódu
     // If image is wider than window's width, set up the width of the window
     if (this.containerWidth >= this.maxWidth) {
         console.log('pocitam sirku');
@@ -80,7 +85,7 @@ Popup.prototype.popupImageShow = function(e) {
 Popup.prototype.popupShow = function(e) {
     this.popupImageShow(e);
     this.popupOverlay.fadeIn(400);
-    return false;
+    return false; // používej e.preventDefault(); (https://css-tricks.com/return-false-and-prevent-default/)
 };
 
 Popup.prototype.resetValues = function() {
