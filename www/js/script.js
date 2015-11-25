@@ -1,8 +1,14 @@
 var Popup = function() {
     this.popupCreate();
     $('body').on('click', 'a[data-popup]', $.proxy(this.popupShow, this));
-    $('.close, .popup-overlay').on('click', $.proxy(this.popupClose, this)); // event delegation
-    $(document).on('keyup === 27', $.proxy(this.popupClose, this)); // jenom pokud je otevřený
+    $('body').on('click', '.close, .popup-overlay', $.proxy(this.popupClose, this));
+
+    // Global variables for calculating dimensions of the popup banner
+    this.windowObject = $(window);
+    this.windowWidth = this.windowObject.width();
+    this.windowHeight = this.windowObject.height();
+
+    // $(window).on('resize', $.proxy(this.popupResize, this));
 };
 
 Popup.prototype.popupCreate = function() {
@@ -13,70 +19,60 @@ Popup.prototype.popupCreate = function() {
 };
 
 Popup.prototype.popupCalculate = function() {
-    // přesunout do kontruktoru, aby se vykonávalo jenom jednou (případně při změně okna)
-    // Variables for calculating dimensions of the popup banner
-    this.windowObject = $(window);
-    this.windowWidth = this.windowObject.width();
-    this.windowHeight = this.windowObject.height();
-    this.containerMargin = 50;
-    this.maxWidth = this.windowWidth - this.containerMargin;
-    this.maxHeight = this.windowHeight - this.containerMargin;
-    var containerWidth = this.container.width();
-    var containerHeight = this.container.height();
+    this.popupImageWidth = this.popupImage.width();
+    this.popupImageHeight = this.popupImage.height();
 
-    // Calculating dimensions to center popup banner
-    this.container.css({
-        left: (this.windowWidth - containerWidth) / 2 + 'px',
-        top: (this.windowHeight - containerHeight) / 2 + 'px',
-    });
-
-    var ratioWidth = this.maxWidth / containerWidth;
-    var ratioHeight = this.maxHeight / containerHeight;
+    // Calculate ratio and adjust image container dimensions
+    var ratioWidth = this.windowWidth / this.popupImageWidth;
+    var ratioHeight = this.windowHeight / this.popupImageHeight;
     var minRatio = Math.min(ratioWidth, ratioHeight);
     if (minRatio < 1) {
-        containerWidth = this.containerWidth * minRatio;
-        containerHeight = containerHeight * minRatio;
+        this.popupImageHeight = this.popupImageHeight * minRatio;
     }
 
+    this.popupApplyStyles();
+
+    // console.log('windowWidth: ' + this.windowWidth);
+    // console.log('imageWidth: ' + this.popupImageWidth);
+    // console.log('windowHeight: ' + this.windowHeight);
+    // console.log('imageHeight: ' + this.popupImageHeight);
+    // console.log('ratio: ' + minRatio);
+    // console.log('top: ' + this.container.css('top'));
+};
+
+Popup.prototype.popupApplyStyles = function() {
     this.container.css({
-        width: this.maxWidth + 'px',
-        height: containerHeight + 'px',
-        left: this.containerMargin / 2 + 'px',
-        top: (this.windowHeight - containerHeight) / 2 + 'px'
+        height: this.popupImageHeight + 'px',
+        top: ((this.windowHeight - this.popupImageHeight) / 2) + 'px'
     });
 };
 
-// Popup.prototype.popupGetHeight = function() {
-//     this.popupRatio = ;
-//     this.containerHeight = this.containerHeight * this.popupRatio;
-//     this.containerWidth = this.containerWidth * this.popupRatio;
-
-//     this.container.css({
-//         height: this.maxHeight + 'px',
-//         width: this.containerWidth + 'px',
-//         left: (this.windowWidth - this.containerWidth) / 2 + 'px',
-//         top: (this.windowHeight - this.containerHeight) / 2 + 'px'
-//     });
+// Popup.prototype.popupResize = function() {
+//     this.popupCalculate();
+//     this.popupApplyStyles();
 // };
 
 Popup.prototype.popupImageShow = function(e) {
     this.popupImage = this.popupOverlay.find('.popup-image');
     this.popupImageSource = $(e.currentTarget).attr('href');
-    this.popupImage.load($.proxy(this.popupCalculate, this));
     this.popupImage.attr('src', this.popupImageSource);
+    this.popupImage.unbind('load');
+    this.popupImage.load($.proxy(this.popupCalculate, this));
 };
 
 Popup.prototype.popupShow = function(e) {
     e.preventDefault();
     this.popupImageShow(e);
     this.popupOverlay.fadeIn(400);
+    $(document).on('keyup === 27', $.proxy(this.popupClose, this));
 };
 
 Popup.prototype.resetValues = function() {
     this.container.removeAttr('style');
 };
 
-Popup.prototype.popupClose = function(e){
+Popup.prototype.popupClose = function(e) {
     e.preventDefault();
     this.popupOverlay.fadeOut('400', $.proxy(this.resetValues, this));
+    $(document).off('keyup');
 };
