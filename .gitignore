@@ -4,3 +4,7 @@ npm-debug.log
 
 # bower
 /www/bower/
+
+# helper scripts
+webbox.js
+lightbox2.js
