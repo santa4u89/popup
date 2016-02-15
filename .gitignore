@@ -6,7 +6,7 @@ npm-debug.log
 /www/bower/
 
 # CSS
-/www/css/
+/www/css
 
 # helper scripts
 webbox.js
