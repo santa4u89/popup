@@ -1,146 +1,158 @@
 var Popup = function() {
     this.popupCreate();
 
-    $('body').on('click', 'a[data-popup]', $.proxy(this.popupShow, this));
-    $('body').on('click', '.close, .popup-overlay', $.proxy(this.popupClose, this));
-
-    // Global variables for calculating dimensions of the popup banner
-    this.windowObject = $(window);
-    this.popupMargin = 20;
-
-    $(window).on('resize', $.proxy(this.popupResize, this));
-
-    // this.popupAlbum();
-};
-
-Popup.prototype.popupCreate = function() {
-    this.popupOverlay = $('<div class="popup-overlay"><div class="popup-container"><div class="image-container"><img class="popup-image" src=""><div class="popup-nav"><a class="popup-next"><i class="material-icons">keyboard_arrow_right</i></a><a class="popup-prev"><i class="material-icons">keyboard_arrow_left</i></a></div></div></div><a class="close" href="#"><i class="material-icons">clear</i></a></div>');
-    this.popupContainer = this.popupOverlay.find('.popup-container');
-    this.popupImageContainer = this.popupContainer.find('.image-container');
-    this.popupNextImage = this.popupImageContainer.find('.popup-next');
-    this.popupPrevImage = this.popupImageContainer.find('.popup-prev');
-    $('body').append(this.popupOverlay);
-    this.popupOverlay.css('display', 'none');
-};
-
-Popup.prototype.popupShow = function(event) {
-    event.preventDefault();
-    this.popupImageShow(event);
-    this.popupOverlay.fadeIn(400);
-    this.enableKeyboard();
-};
-
-Popup.prototype.popupImageShow = function(event) {
-    this.targetImage = $(event.currentTarget);
-    this.popupImage = this.popupOverlay.find('.popup-image');
-    this.popupImageSource = this.targetImage.attr('href');
-    this.popupImageData = this.targetImage.data('popup');
-    this.popupImage.attr('src', this.popupImageSource);
-    this.popupImage.unbind('load');
-    this.popupImage.load($.proxy(this.popupCalculate, this));
-    this.popupAlbum();
-};
-
-Popup.prototype.popupAlbum = function() {
-    var allImages = $('a[data-popup]');
-    this.currentImageIndex = 0;
-
-    // get all data-popup names
-    var albumNames = [];
-    $.each(allImages, function(index, val) {
-         albumNames.push($(val).data('popup'));
+    var self = this;
+    $('body').on('click', 'a[data-popup]', function(event) {
+        event.preventDefault();
+        self.popupStart($(event.currentTarget));
     });
 
-    // delete duplicates
-    $.unique(albumNames);
-    // console.log(albumNames);
+    $('body')
+            .on('click', '#popup-overlay', $.proxy(this.popupClose, this))
+            .on('click', '.popup-next', $.proxy(this.showNextImage, this))
+            .on('click', '.popup-prev', $.proxy(this.showPrevImage, this));
 
-    // albums object of data-popup attributes
-    var albums = {};
-    $.each(albumNames, function(index, val) {
-        albums[val] = allImages.filter('[data-popup="' + val + '"]');
-    });
-    // console.log(albums);
-
-    this.albumLength = albums[this.popupImageData].length;
-    this.currentImage = albums[this.popupImageData][this.currentImageIndex];
-    this.imageLink = this.currentImage.getAttribute('href');
-    console.log(this.imageLink);
+    // $(window).on('resize', $.proxy(this.popupResize, this));
 
     /**
 
         TODO:
-        - Finish albums next/prev image
+        - fix resize
+        - dorobit next/prev funkcionalitu
+        - touch events
+        - caption, how many images info
 
      */
+};
 
+Popup.prototype.popupCreate = function() {
+    $('body').append($('<div id="popup-overlay"><a class="close" href="#"><i class="material-icons">close</i></a></div><div id="popup-container"><div class="image-container"><img class="popup-image" src=""><div class="popup-nav"><a class="popup-next"><i class="material-icons">keyboard_arrow_right</i></a><a class="popup-prev"><i class="material-icons">keyboard_arrow_left</i></a></div></div></div>'));
 
+    this.popupOverlay = $('#popup-overlay');
+    this.popupContainer = $('#popup-container');
+    this.popupImageContainer = this.popupContainer.find('.image-container');
+    this.popupNextImageBtn = this.popupContainer.find('.popup-next');
+    this.popupPrevImageBtn = this.popupContainer.find('.popup-prev');
+};
+
+Popup.prototype.popupStart = function($targetImage) {
+    this.album = [];
+    var imagePosition = 0;
+    var dataPopup = $targetImage.attr('data-popup');
+
+    $targetImages = $('[data-popup="' + dataPopup + '"]');
+
+    for (var i = 0; i < $targetImages.length; i++) {
+        this.addToAlbum($($targetImages[i]));
+
+        if ($targetImages[i] === $targetImage[0]) {
+          imagePosition = i;
+        }
+    }
+
+    this.popupImageLoad(imagePosition);
+
+    this.popupOverlay.fadeIn(400);
+    this.popupContainer.fadeIn(400);
+    this.enableKeyboard();
+};
+
+Popup.prototype.addToAlbum = function($targetImage) {
+    this.album.push({
+        link: $targetImage.attr('href'),
+        data: $targetImage.data('popup')
+    });
+};
+
+Popup.prototype.popupImageLoad = function(imagePosition) {
+    var self = this;
+    var $image = this.popupContainer.find('.popup-image');
+    var preloader = new Image();
+
+    preloader.onload = function () {
+        var windowWidth;
+        var windowHeight;
+        var popupImageWidth;
+        var popupImageHeight;
+        var popupMargin;
+
+        $image.attr('src', self.album[imagePosition].link);
+
+        windowWidth = $(window).width();
+        windowHeight = $(window).height();
+        popupImageWidth = $image.width();
+        popupImageHeight = $image.height();
+        popupMargin = 20;
+
+        // Calculate ratio and adjust image container dimensions
+        var ratioWidth = windowWidth / popupImageWidth;
+        var ratioHeight = windowHeight / popupImageHeight;
+        var minRatio = Math.min(ratioWidth, ratioHeight);
+
+        if (minRatio < 1) {
+            popupImageHeight = (popupImageHeight * minRatio) - (popupMargin * 2);
+        }
+
+        if (minRatio === 1) {
+            popupImageWidth = popupImageWidth - popupMargin * 2;
+            popupImageHeight = (popupImageHeight * minRatio) - (popupMargin * 2);
+        }
+
+        self.popupContainer.css('top', ((windowHeight - popupImageHeight) / 2) + 'px');
+        self.popupImageContainer.css({
+            width: popupImageWidth,
+            height: popupImageHeight
+        });
+    };
+
+    preloader.src = this.album[imagePosition].link;
+    this.currentImageIndex = imagePosition;
+
+    if (this.album.length > 1) {
+        this.showNavArrows();
+    }
 };
 
 Popup.prototype.showNavArrows = function() {
-    if (this.currentImageIndex > 1) {
-        this.popupPrevImage.show();
-        console.log('prev arrow show');
-    } else if (this.currentImageIndex < this.albumLength) {
-        this.popupNextImage.show();
-        console.log('next arrow show');
-    } else {
-        this.popupPrevImage.hide();
-        this.popupNextImage.hide();
-        console.log('hide arrows');
+    if (this.currentImageIndex > 0) {
+        this.popupPrevImageBtn.show();
+    }
+
+    if (this.currentImageIndex === 0) {
+        this.popupPrevImageBtn.hide();
+    }
+
+    if (this.currentImageIndex < this.album.length) {
+        this.popupNextImageBtn.show();
+    }
+
+    if (this.currentImageIndex === this.album.length - 1) {
+        this.popupNextImageBtn.hide();
     }
 };
 
-Popup.prototype.popupChangeImage = function() {
+Popup.prototype.showNextImage = function() {
+    this.popupImageLoad(this.currentImageIndex + 1);
 };
 
-Popup.prototype.popupCalculate = function() {
-    this.windowWidth = this.windowObject.width();
-    this.windowHeight = this.windowObject.height();
-    this.popupImageWidth = this.popupImage.width();
-    this.popupImageHeight = this.popupImage.height();
-
-    // Calculate ratio and adjust image container dimensions
-    this.ratioWidth = this.windowWidth / this.popupImageWidth;
-    this.ratioHeight = this.windowHeight / this.popupImageHeight;
-    this.minRatio = Math.min(this.ratioWidth, this.ratioHeight);
-
-    if (this.minRatio < 1) {
-        this.popupImageHeight = (this.popupImageHeight * this.minRatio) - (this.popupMargin * 2);
-    }
-
-    if (this.minRatio === 1) {
-        this.popupImageWidth = this.popupImageWidth - this.popupMargin * 2;
-        this.popupImageHeight = (this.popupImageHeight * this.minRatio) - (this.popupMargin * 2);
-    }
-
-    this.popupSetDimensions();
-    // this.dimensionsLog();
-};
-
-Popup.prototype.popupSetDimensions = function() {
-    // this.popupContainer.height(this.popupImageHeight - (this.popupMargin * 2));
-    // this.popupContainer.width(this.popupImageWidth - (this.popupMargin * 2));
-    this.popupContainer.css({
-        height: this.popupImageHeight + 'px',
-        width: this.popupImageWidth + 'px',
-        top: ((this.windowHeight - this.popupImageHeight) / 2) + 'px'
-    });
+Popup.prototype.showPrevImage = function() {
+    this.popupImageLoad(this.currentImageIndex - 1);
 };
 
 Popup.prototype.popupResize = function() {
     this.resetValues();
-    this.popupCalculate();
-    this.popupSetDimensions();
+    this.popupImageLoad();
 };
 
 Popup.prototype.popupClose = function() {
     this.popupOverlay.fadeOut('400', $.proxy(this.resetValues, this));
+    this.popupContainer.fadeOut();
     this.disableKeyboard();
 };
 
 Popup.prototype.resetValues = function() {
     this.popupContainer.removeAttr('style');
+    this.popupImageContainer.removeAttr('style');
 };
 
 Popup.prototype.enableKeyboard = function() {
@@ -158,15 +170,18 @@ Popup.prototype.keyboardActions = function(key) {
 
     var keycode = key.keyCode;
 
-    switch(keycode){
+    switch (keycode){
         case ESC:
             this.popupClose();
+            console.log('esc close');
             break;
         case LEFT_ARROW:
-            console.log('left arrow');
+            this.showPrevImage();
+            console.log('show prev image');
             break;
         case RIGHT_ARROW:
-            console.log('right arrow');
+            this.showNextImage();
+            console.log('show next image');
             break;
         default:
             break;
